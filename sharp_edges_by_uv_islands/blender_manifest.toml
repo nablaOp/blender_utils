@@ -1,0 +1,14 @@
+schema_version = "1.0.0"
+
+id = "sharp_edges_by_uv_islands"
+version = "1.0.0"
+name = "Sharp edges by UV islands"
+tagline = "Mark sharp edges based on UV islands"
+maintainer = "nablaOp"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later"
+]
