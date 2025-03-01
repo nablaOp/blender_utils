@@ -3,13 +3,13 @@ import bmesh
 from bpy_extras import bmesh_utils
 
 
-def main(context):
-    prev_mode = context.object.mode
+def process_object(context, obj):
+    context.view_layer.objects.active = obj
+    o_mode = obj.mode
+
     bpy.ops.object.mode_set(mode="EDIT")
 
-    ob = context.active_object
-
-    bm = bmesh.from_edit_mesh(ob.data)
+    bm = bmesh.from_edit_mesh(obj.data)
     uv = bm.loops.layers.uv.active
 
     bpy.ops.mesh.select_all(action="SELECT")
@@ -35,10 +35,32 @@ def main(context):
     for edge in edges_in_multiple_islands:
         edge.smooth = False
 
-    bmesh.update_edit_mesh(ob.data)
+    bmesh.update_edit_mesh(obj.data)
     bm.free()
 
-    bpy.ops.object.mode_set(mode=prev_mode)
+    bpy.ops.object.mode_set(mode=o_mode)
+
+
+def main(context):
+    o_active = context.active_object
+    o_mode = o_active.mode
+    o_selected = context.selected_objects.copy()
+
+    for obj in context.view_layer.objects:
+        obj.select_set(False)
+
+    for obj in o_selected:
+        if obj.type == "MESH":
+            process_object(context, obj)
+
+    for obj in context.view_layer.objects:
+        obj.select_set(False)
+    for obj in o_selected:
+        obj.select_set(True)
+
+    context.view_layer.objects.active = o_active
+    bpy.ops.object.mode_set(mode=o_mode)
+
 
 
 class OBJECT_OT_sharp_edges_by_uv_islands(bpy.types.Operator):
@@ -71,8 +93,8 @@ def register_hotkey():
         OBJECT_OT_sharp_edges_by_uv_islands.bl_idname,
         type="H",
         value="PRESS",
-        ctrl=True,
         shift=True,
+        ctrl=True,
         alt=True,
     )
     op_keymaps.append((keymap, keymap_item))
